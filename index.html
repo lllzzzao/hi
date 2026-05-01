@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>尘埃服务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 全局返回按钮 */
+        .back-btn {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            padding: 12px 25px;
+            background: #333;
+            border-radius: 50px;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            z-index: 9999;
+            cursor: pointer;
+        }
+
+        /* 1. 学校输入页（最简化，无任何特效） */
+        .school-page {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            background: #000;
+        }
+        .school-title {
+            font-size: 48px;
+            color: #fff;
+        }
+        .school-input {
+            width: 320px;
+            height: 55px;
+            padding: 0 25px;
+            border-radius: 15px;
+            border: 1px solid #666;
+            background: #111;
+            color: #fff;
+            font-size: 17px;
+            outline: none;
+        }
+        .school-btn {
+            padding: 15px 50px;
+            background: #ff6b9d;
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* 2. 开发者悬浮窗 */
+        .dev-toast {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 35px;
+            background: #000;
+            border: 1px solid #0f0;
+            border-radius: 15px;
+            color: #0f0;
+            font-size: 16px;
+            z-index: 9999;
+            display: none;
+        }
+
+        /* 3. 加载页 */
+        .load-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            background: #000;
+        }
+        .load-text {
+            font-size: 30px;
+            color: #fff;
+        }
+        .load-bar {
+            width: 380px;
+            height: 12px;
+            background: #333;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        .load-progress {
+            height: 100%;
+            width: 0%;
+            background: #007aff;
+            border-radius: 50px;
+        }
+
+        /* 4. 主页（无动画，直接显示） */
+        .home-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            background: #000;
+        }
+        .home-title {
+            font-size: 55px;
+            color: #ff6b9d;
+        }
+        .home-sub {
+            font-size: 17px;
+            color: #888;
+        }
+        .home-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 40px;
+        }
+        .home-btn {
+            width: 300px;
+            padding: 18px;
+            background: #222;
+            border: 1px solid #666;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* 5. 吃瓜发布页 */
+        .gua-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            background: #000;
+        }
+        .gua-title {
+            font-size: 32px;
+            color: #ff6b9d;
+        }
+        .gua-btn {
+            width: 300px;
+            padding: 18px;
+            background: #222;
+            border: 1px solid #666;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* 6. 发布内容页 */
+        .post-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+            gap: 20px;
+            background: #000;
+        }
+        .post-title {
+            font-size: 28px;
+            color: #ff6b9d;
+        }
+        .file-upload {
+            width: 320px;
+            padding: 15px;
+            background: #222;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .post-input {
+            width: 320px;
+            height: 180px;
+            background: #222;
+            border: 1px solid #666;
+            border-radius: 15px;
+            padding: 20px;
+            color: #fff;
+            font-size: 17px;
+            resize: none;
+            outline: none;
+        }
+        .post-btn {
+            padding: 15px 50px;
+            background: #ff6b9d;
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .preview-box {
+            width: 320px;
+            max-height: 200px;
+            border-radius: 12px;
+            display: none;
+        }
+        .preview-box img, .preview-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 7. 查看所有消息页 */
+        .msg-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            padding: 60px 20px;
+            gap: 20px;
+            overflow-y: auto;
+            background: #000;
+        }
+        .msg-title {
+            font-size: 28px;
+            color: #ff6b9d;
+            text-align: center;
+        }
+        .msg-item {
+            background: #222;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #666;
+        }
+        .msg-media {
+            width: 100%;
+            max-height: 250px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .msg-media img, .msg-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .msg-time {
+            font-size: 13px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        /* 8. 管理员登录页 */
+        .admin-login-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            background: #000;
+        }
+        .admin-title {
+            font-size: 32px;
+            color: #ff3b30;
+        }
+        .admin-input {
+            width: 320px;
+            height: 55px;
+            padding: 0 25px;
+            border-radius: 15px;
+            border: 1px solid #666;
+            background: #111;
+            color: #fff;
+            font-size: 17px;
+            outline: none;
+        }
+
+        /* 9. 管理员后台页 */
+        .admin-page {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            padding: 60px 20px;
+            gap: 20px;
+            overflow-y: auto;
+            background: #000;
+        }
+        .admin-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-title {
+            font-size: 28px;
+            color: #ff3b30;
+        }
+        .admin-clear {
+            padding: 10px 20px;
+            background: #ff3b30;
+            border-radius: 10px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        .admin-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .admin-del-btn {
+            background: #ff3b30;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .admin-ban-btn {
+            background: #ff9500;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">← 返回</button>
+
+    <div class="school-page" id="schoolPage">
+        <h1 class="school-title">尘埃服务</h1>
+        <input type="text" class="school-input" id="schoolInput" placeholder="请输入你的学校">
+        <button class="school-btn" onclick="checkSchool()">确认进入</button>
+    </div>
+
+    <div class="dev-toast" id="devToast">检测到是开发者用户，已为你自动屏蔽限制</div>
+
+    <div class="load-page" id="loadPage">
+        <p class="load-text">欢迎加入表白墙</p>
+        <div class="load-bar">
+            <div class="load-progress" id="progress"></div>
+        </div>
+    </div>
+
+    <div class="home-page" id="homePage">
+        <h1 class="home-title">表白墙</h1>
+        <p class="home-sub">服务器连接正常</p>
+        <div class="home-btns" id="homeBtns">
+            <div class="home-btn" onclick="alert('联系作者：admin@chenai.com')">联系作者</div>
+            <div class="home-btn" onclick="showPostPage()">发布内容</div>
+            <div class="home-btn" onclick="showPostPage()">匿名发布</div>
+            <div class="home-btn" onclick="showGuaPage()">发布吃瓜内容</div>
+            <div class="home-btn" onclick="showMsgPage()">查看所有消息</div>
+            <div class="home-btn" onclick="showAdminLogin()">管理员入口</div>
+        </div>
+    </div>
+
+    <div class="gua-page" id="guaPage">
+        <h2 class="gua-title">发布吃瓜内容</h2>
+        <div class="gua-btn" onclick="openFileUpload()">📷 图片视频+文字发布</div>
+        <div class="gua-btn" onclick="showPostPage()">✍️ 纯文字发布</div>
+    </div>
+
+    <div class="post-page" id="postPage">
+        <h2 class="post-title">发布内容</h2>
+        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+            📁 点击上传图片/视频
+            <input type="file" id="fileInput" accept="image/*,video/*" hidden onchange="previewFile()">
+        </div>
+        <div class="preview-box" id="previewBox"></div>
+        <textarea class="post-input" id="postInput" placeholder="写下你的内容（禁止违规词，全站可见）"></textarea>
+        <button class="post-btn" onclick="submitPost()">提交发布</button>
+    </div>
+
+    <div class="msg-page" id="msgPage">
+        <h2 class="msg-title">所有表白&吃瓜</h2>
+    </div>
+
+    <div class="admin-login-page" id="adminLoginPage">
+        <h2 class="admin-title">管理员登录</h2>
+        <input type="text" class="admin-input" id="adminPwd" placeholder="输入管理员密码">
+        <button class="school-btn" onclick="checkAdmin()">登录管理员</button>
+    </div>
+
+    <div class="admin-page" id="adminPage">
+        <div class="admin-top">
+            <h2 class="admin-title">管理员后台</h2>
+            <button class="admin-clear" onclick="clearAllMsg()">清空所有内容</button>
+        </div>
+    </div>
+
+    <script>
+        // 违规词库（你要的全在）
+        const badWords = ["我奥你啊", "加冯", "cn", "CN", "Cn", "cN", "筷子", "水泥", "不回我消息", "傻逼", "操", "草", "尼玛", "你妈", "垃圾", "废物", "狗东西", "杂种", "贱", "滚", "做爱", "约炮", "开房", "嫖娼", "卖淫", "裸聊", "自慰", "鸡巴", "屌", "逼", "骚", "黄", "赌博", "赌钱", "博彩", "杀猪盘", "刷单", "跑分", "网赌", "自杀", "跳楼", "杀人", "暴力", "毒品", "违禁"];
+        function filterBadWords(text) {
+            for (let word of badWords) if (text.includes(word)) return null;
+            return text;
+        }
+
+        // 全局变量
+        let currentPage = "schoolPage";
+        const allPages = ["schoolPage", "loadPage", "homePage", "guaPage", "postPage", "msgPage", "adminLoginPage", "adminPage"];
+        let selectedFile = null;
+        let msgList = JSON.parse(localStorage.getItem("chenaiMsg")) || [];
+
+        // 页面切换（最简化，无任何特效）
+        function hideAllPages() { allPages.forEach(id => document.getElementById(id).style.display = "none"); }
+        function showPage(pageId) { hideAllPages(); document.getElementById(pageId).style.display = "flex"; currentPage = pageId; }
+        function goBack() { showPage("homePage"); }
+
+        // 【核心修复：学校验证 无延迟、无动画、直接跳转】
+        function checkSchool() {
+            const school = document.getElementById("schoolInput").value.trim();
+            if (school === "实验二中") {
+                // 直接显示悬浮窗，立刻进加载页
+                document.getElementById("devToast").style.display = "block";
+                showPage("loadPage");
+                startLoad();
+                // 悬浮窗1秒后消失
+                setTimeout(() => document.getElementById("devToast").style.display = "none", 1000);
+            } else {
+                alert("学校输入错误，仅支持【实验二中】");
+            }
+        }
+
+        // 加载条（直接跑，无延迟）
+        function startLoad() {
+            let progress = 0;
+            const bar = document.getElementById("progress");
+            const timer = setInterval(() => {
+                progress += 5;
+                bar.style.width = progress + "%";
+                if (progress >= 100) {
+                    clearInterval(timer);
+                    // 加载完立刻进主页
+                    showPage("homePage");
+                }
+            }, 20);
+        }
+
+        // 页面跳转（原生点击）
+        function showGuaPage() { showPage("guaPage"); }
+        function showPostPage() { selectedFile = null; document.getElementById("previewBox").style.display = "none"; document.getElementById("postInput").value = ""; showPage("postPage"); }
+        function showMsgPage() { renderAllMsg(); showPage("msgPage"); }
+        function showAdminLogin() { showPage("adminLoginPage"); }
+        function openFileUpload() { showPostPage(); document.getElementById("fileInput").click(); }
+
+        // 上传预览
+        function previewFile() {
+            const file = document.getElementById("fileInput").files[0];
+            if (!file) return;
+            selectedFile = file;
+            const preview = document.getElementById("previewBox");
+            preview.style.display = "block";
+            preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" controls></video>`;
+        }
+
+        // 发布消息
+        function submitPost() {
+            const content = document.getElementById("postInput").value.trim();
+            const safeText = filterBadWords(content);
+            if (!safeText && !selectedFile) { alert("请输入内容或上传图片/视频！"); return; }
+            if (safeText === null) { alert("内容包含违规词，禁止发布！"); document.getElementById("postInput").value = ""; return; }
+
+            const msg = { id: Date.now(), content: safeText || "", media: selectedFile ? URL.createObjectURL(selectedFile) : "", mediaType: selectedFile ? selectedFile.type : "", time: new Date().toLocaleString(), isBan: false };
+            msgList.unshift(msg);
+            localStorage.setItem("chenaiMsg", JSON.stringify(msgList));
+            alert("发布成功！全站可见！");
+            showPage("homePage");
+        }
+
+        // 渲染消息
+        function renderAllMsg() {
+            const msgBox = document.getElementById("msgPage");
+            msgBox.innerHTML = `<h2 class="msg-title">所有表白&吃瓜</h2>`;
+            if (msgList.length === 0) { msgBox.innerHTML += `<p style="text-align:center; color:#888;">暂无内容，快来发布第一条吧～</p>`; return; }
+            msgList.forEach(msg => {
+                if (!msg.isBan) {
+                    let mediaHtml = "";
+                    if (msg.media) mediaHtml = msg.mediaType.startsWith("image/") ? `<div class="msg-media"><img src="${msg.media}"></div>` : `<div class="msg-media"><video src="${msg.media}" controls></video></div>`;
+                    msgBox.innerHTML += `<div class="msg-item">${mediaHtml}<p>${msg.content}</p><div class="msg-time">${msg.time}</div></div>`;
+                }
+            });
+        }
+
+        // 管理员（无任何特效，直接操作）
+        function checkAdmin() {
+            const pwd = document.getElementById("adminPwd").value.trim();
+            if (pwd === "admin123") { alert("正在连接服务器...密码验证成功，你是管理员"); renderAdminPage(); showPage("adminPage"); }
+            else alert("密码错误");
+        }
+        function renderAdminPage() {
+            const adminBox = document.getElementById("adminPage");
+            adminBox.innerHTML = `<div class="admin-top"><h2 class="admin-title">管理员后台</h2><button class="admin-clear" onclick="clearAllMsg()">清空所有内容</button></div>`;
+            if (msgList.length === 0) { adminBox.innerHTML += `<p style="text-align:center; color:#888;">暂无内容</p>`; return; }
+            msgList.forEach((msg, index) => {
+                let mediaHtml = "";
+                if (msg.media) mediaHtml = msg.mediaType.startsWith("image/") ? `<div class="msg-media"><img src="${msg.media}"></div>` : `<div class="msg-media"><video src="${msg.media}" controls></video></div>`;
+                adminBox.innerHTML += `<div class="msg-item">${mediaHtml}<p>${msg.content}</p><div class="msg-time">${msg.time}</div><div class="admin-btn-group"><button class="admin-del-btn" onclick="delMsg(${index})">🗑️ 彻底删除</button><button class="admin-ban-btn" onclick="banMsg(${index})">🚫 封禁内容</button></div></div>`;
+            });
+        }
+        function delMsg(index) { if (confirm("确定删除？")) { msgList.splice(index,1); localStorage.setItem("chenaiMsg", JSON.stringify(msgList)); renderAdminPage(); alert("删除成功！"); } }
+        function banMsg(index) { msgList[index].isBan = true; localStorage.setItem("chenaiMsg", JSON.stringify(msgList)); renderAdminPage(); alert("封禁成功！"); }
+        function clearAllMsg() { if (confirm("确定清空所有内容？")) { msgList = []; localStorage.setItem("chenaiMsg", JSON.stringify(msgList)); renderAdminPage(); alert("清空成功！"); } }
+    </script>
+</body>
+</html>
